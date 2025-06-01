@@ -12,7 +12,7 @@
 </head>
 <body style="font-family: 'Lexend Deca', sans-serif;">
 <div class="container">
-  <h3 class="text-center">Linear Programming</h3>
+  <h4 class="text-center fw-bold">Linear Programming</h4>
   <div class="row justify-content-center align-items-center">
     <div class="col-md-4 bg-light p-3 m-2">
       <h6 class="mb-0">Select Method:</h6>
@@ -20,7 +20,7 @@
     <div class="col-md-4 bg-light p-3 m-2 text-end">
       <div class="dropdown">
         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
+                aria-expanded="false" style="background-color: #5664F5">
           Click on me
         </button>
         <ul class="dropdown-menu">
@@ -50,23 +50,24 @@
       <h6 class="mb-0">Problem Type:</h6>
     </div>
     <div class="col-md-4 bg-light p-3 m-2">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="" id="checkIndeterminate">
-        <label class="form-check-label" for="checkIndeterminate">
-          Maximization
-        </label>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="checkMax">
+        <label class="form-check-label" for="checkMax">Maximization</label>
       </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="" id="checkIndeterminate">
-        <label class="form-check-label" for="checkIndeterminate">
-          Minimization
-        </label>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="checkMin">
+        <label class="form-check-label" for="checkMin">Minimization</label>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-md-8 text-center mt-3">
+        <button type="submit" class="btn btn-primary" style="--bs-btn-padding-x: 7.75rem; background-color: #5664F5">
+          Resolver
+        </button>
       </div>
     </div>
   </div>
-
 </div>
-
 <script src="{{ url_for('static', filename='scripts/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>
