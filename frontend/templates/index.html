@@ -3,62 +3,86 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link
-          rel="stylesheet"
-          href="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
-  />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}" />
   <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca&display=swap" rel="stylesheet">
   <title>Linear Programming</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #eaf0f6; /* Fondo suave */
+      font-family: 'Lexend Deca', sans-serif;
+    }
+    .wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    .container {
+      background-color: white; /* Fondo del contenido */
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+  </style>
 </head>
-<body style="font-family: 'Lexend Deca', sans-serif;">
-<div class="container">
-  <h4 class="text-center fw-bold">Linear Programming</h4>
-  <div class="row justify-content-center align-items-center">
-    <div class="col-md-4 bg-light p-3 m-2">
-      <h6 class="mb-0">Select Method:</h6>
-    </div>
-    <div class="col-md-4 bg-light p-3 m-2 text-end">
-      <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                aria-expanded="false" style="background-color: #5664F5">
-          Click on me
-        </button>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">method 1</a></li>
-          <li><a class="dropdown-item" href="#">method 2</a></li>
-          <li><a class="dropdown-item" href="#">method 3</a></li>
-        </ul>
+<body>
+<div class="wrapper">
+  <div class="container">
+    <h4 class="text-center fw-bold">Linear Programming</h4>
+
+    <div class="row justify-content-center align-items-center">
+      <div class="col-md-4 bg-light p-3 m-2">
+        <h6 class="mb-0">Select Method:</h6>
+      </div>
+      <div class="col-md-4 bg-light p-3 m-2 text-end">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                  aria-expanded="false" style="background-color: #5664F5">
+            Click on me
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">method 1</a></li>
+            <li><a class="dropdown-item" href="#">method 2</a></li>
+            <li><a class="dropdown-item" href="#">method 3</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-8 bg-light p-3 ">
-      <label for="exampleInput" class="form-label">Objetive Function</label>
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. 3x + 2y <= 10">
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-8 bg-light p-3 ">
-      <label for="exampleInput" class="form-label">Constraints:</label>
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. x + y <= 5">
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. x + y <= 5">
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. x + y <= 5">
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-4 bg-light p-3 m-2">
-      <h6 class="mb-0">Problem Type:</h6>
-    </div>
-    <div class="col-md-4 bg-light p-3 m-2">
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="checkbox" id="checkMax">
-        <label class="form-check-label" for="checkMax">Maximization</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="checkbox" id="checkMin">
-        <label class="form-check-label" for="checkMin">Minimization</label>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8 bg-light p-3">
+        <label for="exampleInput" class="form-label">Objetive Function</label>
+        <input type="text" class="form-control" id="exampleInput" placeholder="e.g. 3x + 2y <= 10">
       </div>
     </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8 bg-light p-3">
+        <label for="exampleInput" class="form-label">Constraints:</label>
+        <input type="text" class="form-control" placeholder="e.g. x + y <= 5">
+        <input type="text" class="form-control mt-2" placeholder="e.g. x + y <= 5">
+        <input type="text" class="form-control mt-2" placeholder="e.g. x + y <= 5">
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-4 bg-light p-3 m-2">
+        <h6 class="mb-0">Problem Type:</h6>
+      </div>
+      <div class="col-md-4 bg-light p-3 m-2">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="checkMax">
+          <label class="form-check-label" for="checkMax">Maximization</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="checkMin">
+          <label class="form-check-label" for="checkMin">Minimization</label>
+        </div>
+      </div>
+    </div>
+
     <div class="row justify-content-center">
       <div class="col-md-8 text-center mt-3">
         <button type="submit" class="btn btn-primary" style="--bs-btn-padding-x: 7.75rem; background-color: #5664F5">
@@ -71,3 +95,4 @@
 <script src="{{ url_for('static', filename='scripts/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>
+
