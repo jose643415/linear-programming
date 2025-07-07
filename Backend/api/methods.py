@@ -8,7 +8,6 @@ def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
     y = np.linspace(y_min, y_max, 400)
     X, Y = np.meshgrid(x, y)
 
-    # Máscara de la región factible
     mascara = np.ones_like(X, dtype=bool)
     for a, b, cst, sentido in restricciones:
         if sentido == '<=':
@@ -18,7 +17,6 @@ def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
         elif sentido == '=':
             mascara &= np.isclose(a * X + b * Y, cst, atol=1e-3)
 
-    # Graficar restricciones (trazos más cortos)
     fig = go.Figure()
     for a, b, cst, sentido in restricciones:
         if b != 0:
@@ -40,14 +38,12 @@ def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
                     line=dict(dash=estilo)
                 ))
 
-    # Graficar región factible
     fig.add_trace(go.Contour(
         x=x, y=y, z=mascara.astype(int),
         showscale=False, opacity=0.3, colorscale=[[0, 'rgba(0,0,0,0)'], [1, 'lightgreen']],
         hoverinfo='skip', name='Región factible'
     ))
 
-    # Preparar restricciones para linprog
     c = np.array(objetivo)
     if maximizar:
         c = -c

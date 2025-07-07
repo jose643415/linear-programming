@@ -1,72 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link
-          rel="stylesheet"
-          href="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
-  />
-  <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca&display=swap" rel="stylesheet">
-  <title>Linear Programming</title>
-</head>
-<body style="font-family: 'Lexend Deca', sans-serif;">
-<div class="container">
-  <h3 class="text-center">Linear Programming</h3>
-  <div class="row justify-content-center align-items-center">
-    <div class="col-md-4 bg-light p-3 m-2">
-      <h6 class="mb-0">Select Method:</h6>
-    </div>
-    <div class="col-md-4 bg-light p-3 m-2 text-end">
-      <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
-          Click on me
-        </button>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">method 1</a></li>
-          <li><a class="dropdown-item" href="#">method 2</a></li>
-          <li><a class="dropdown-item" href="#">method 3</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-8 bg-light p-3 ">
-      <label for="exampleInput" class="form-label">Objetive Function</label>
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. 3x + 2y <= 10">
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-8 bg-light p-3 ">
-      <label for="exampleInput" class="form-label">Constraints:</label>
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. x + y <= 5">
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. x + y <= 5">
-      <input type="text" class="form-control" id="exampleInput" placeholder="e.g. x + y <= 5">
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-4 bg-light p-3 m-2">
-      <h6 class="mb-0">Problem Type:</h6>
-    </div>
-    <div class="col-md-4 bg-light p-3 m-2">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="" id="checkIndeterminate">
-        <label class="form-check-label" for="checkIndeterminate">
-          Maximization
-        </label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="" id="checkIndeterminate">
-        <label class="form-check-label" for="checkIndeterminate">
-          Minimization
-        </label>
-      </div>
-    </div>
-  </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+      <link
+      href="https://fonts.googleapis.com/css2?family=Lexend+Deca&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/main.css') }}"
+    />
+    <title>Linear Programming</title>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <h4 class="text-center fw-bold">Linear Programming</h4>
 
-</div>
+        <div class="row justify-content-center align-items-center">
+          <div class="col-md-4 bg-light p-3 m-2">
+            <h6 class="mb-0">Select Method:</h6>
+          </div>
+          <div class="col-md-4 bg-light p-3 m-2 text-end">
+            <div class="dropdown">
+              <button
+                class="btn btn-secondary dropdown-toggle"
+                type="button"
+                id="methodDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                style="background-color: #5664f5"
+              >
+                Select Method
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    onclick="selectMethod('Graphical Method')"
+                    >Graphical Method</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    onclick="selectMethod('Simplex Method')"
+                    >Simplex Method</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-<script src="{{ url_for('static', filename='scripts/bootstrap.bundle.min.js') }}"></script>
-</body>
+        <div class="row justify-content-center">
+          <div class="col-md-8 bg-light p-3">
+            <label for="objectiveFunction" class="form-label"
+              >Objetive Function</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="objectiveFunction"
+              placeholder="e.g. 3x + 2y <= 10"
+            />
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-md-8 bg-light p-3">
+            <label class="form-label">Constraints:</label>
+            <div id="constraintsContainer">
+              <!-- El primer campo de restricción (siempre presente) -->
+              <div class="constraint-group">
+                <div class="d-flex align-items-center">
+                  <input
+                    type="text"
+                    class="form-control constraint-input"
+                    placeholder="e.g. (1, 0, 4, '<=')"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Enter the constraint in the format: (1, 0, 4, '<=')"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-remove ms-2"
+                    onclick="removeConstraint(this)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="constraint-controls">
+              <button
+                type="button"
+                class="btn btn-sm btn-add"
+                onclick="addConstraint()"
+              >
+                + Add Constraint
+              </button>
+              <small class="text-muted"
+                >Click + to add more constraints, × to remove</small
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-md-4 bg-light p-3 m-2">
+            <h6 class="mb-0">Problem Type:</h6>
+          </div>
+          <div class="col-md-4 bg-light p-3 m-2">
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="problemType"
+                id="checkMax"
+                value="max"
+              />
+              <label class="form-check-label" for="checkMax"
+                >Maximization</label
+              >
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="problemType"
+                id="checkMin"
+                value="min"
+              />
+              <label class="form-check-label" for="checkMin"
+                >Minimization</label
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-md-8 text-center mt-3">
+            <form action="/results" method="post">
+              <button
+                type="submit"
+                class="btn btn-primary btn-submit"
+                onclick="submitForm()"
+              >
+                Solve
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
+  </body>
 </html>

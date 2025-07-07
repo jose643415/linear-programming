@@ -1,0 +1,216 @@
+/* ===== VARIABLES CSS ===== */
+:root {
+  --primary-color: #5664f5;
+  --background-color: #eaf0f6;
+  --container-background: #ffffff;
+  --success-color: #28a745;
+  --success-hover: #218838;
+  --success-border: #1e7e34;
+  --danger-color: #dc3545;
+  --danger-hover: #c82333;
+  --danger-border: #bd2130;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --border-radius: 12px;
+  --font-family: "Lexend Deca", sans-serif;
+}
+
+/* ===== BASE STYLES ===== */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--background-color);
+  font-family: var(--font-family);
+}
+
+/* ===== LAYOUT ===== */
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 20px 0;
+}
+
+.container {
+  background-color: var(--container-background);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 30px;
+  max-width: 800px;
+}
+
+/* ===== CONSTRAINTS SECTION ===== */
+.constraint-group {
+  margin-bottom: 10px;
+}
+
+.constraint-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-remove {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+  min-width: 40px;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-border);
+  color: white;
+  transform: scale(1.05);
+}
+
+.btn-add {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background-color: var(--success-hover);
+  border-color: var(--success-border);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-submit {
+  --bs-btn-padding-x: 7.75rem;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  background-color: #4552e8;
+  border-color: #4552e8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(86, 100, 245, 0.3);
+}
+
+/* ===== DROPDOWN STYLES ===== */
+.dropdown-toggle {
+  min-width: 180px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.dropdown-toggle.method-selected {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+  color: white !important;
+}
+
+.dropdown-toggle.method-selected:hover {
+  background-color: var(--success-hover) !important;
+  border-color: var(--success-border) !important;
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.dropdown-item {
+  padding: 10px 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateX(5px);
+}
+
+.dropdown-item:active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* ===== FORM ELEMENTS ===== */
+.form-control {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(86, 100, 245, 0.25);
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .btn-submit {
+    --bs-btn-padding-x: 4rem;
+  }
+
+  .constraint-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 576px) {
+  .wrapper {
+    padding: 10px 0;
+  }
+
+  .container {
+    padding: 15px;
+  }
+
+  .btn-submit {
+    --bs-btn-padding-x: 2rem;
+    width: 100%;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+.constraint-group {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+.text-muted {
+  font-size: 0.875rem;
+}
+
+.bg-light {
+  background-color: #f8f9fa !important;
+  border-radius: 8px;
+}
