@@ -10,6 +10,13 @@ function selectMethod(methodName) {
     dropdownButton.classList.add("method-selected");
   }
 
+  const hiddenMethod = document.getElementById("method");
+  if (hiddenMethod) {
+    hiddenMethod.value = methodName;
+  }
+
+  console.log(hiddenMethod);
+
   showMessage(`Selected method: ${methodName}`, "success");
 
   handleMethodSpecificFeatures(methodName);
@@ -46,6 +53,7 @@ function addConstraint() {
         class="form-control constraint-input"
         placeholder= "e.g. (1, 0, 4, '<=')"
         aria-label="Constraint ${constraintCounter}"
+        name="constraint ${constraintCounter}"
         data-bs-toggle="tooltip"
         data-bs-placement="top"
         title="Enter the constraint in the format: (1, 0, 4, '<=')"
@@ -94,7 +102,7 @@ function submitForm() {
     return;
   }
 
-  processFormData(formData);
+  sendToBackend(formData);
 }
 
 function collectFormData() {
@@ -181,6 +189,26 @@ function processFormData(formData) {
   );
 }
 
+function sendToBackend(formData) {
+  console.log("Sending form data to backend:", formData);
+  fetch("/resolver", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Success:", data);
+      showMessage("Problem solved successfully!", "success");
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      showMessage("Error processing the problem. Please try again.", "error");
+    });
+}
+
 function showMessage(message, type) {
   const messageTypes = {
     success: "✅ Success: ",
@@ -251,33 +279,4 @@ function initializeConstraintValidation() {
     },
     true
   );
-}
-
-// ===== BACKEND INTEGRATION (PLACEHOLDER) =====
-
-/**
- * Sends form data to backend (placeholder function)
- * @param {Object} formData - The form data to send
- */
-function sendToBackend(formData) {
-  // This is a placeholder for backend integration
-  // Replace with actual API call
-  /*
-  fetch('/api/linear-programming', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData)
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Success:', data);
-    showMessage('Problem solved successfully!', 'success');
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    showMessage('Error processing the problem. Please try again.', 'error');
-  });
-  */
 }
