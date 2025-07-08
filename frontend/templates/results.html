@@ -3,52 +3,388 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Result of the solution</title>
+    <title>Resultados del Problema</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      href="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
     />
+    <link rel="stylesheet" href="main.css" />
     <style>
-      body {
-        background-color: #eaf0f6;
-        font-family: "Lexend Deca", sans-serif;
+      .results-wrapper {
+        background-color: var(--background-color);
+        min-height: 100vh;
+        padding: 20px 0;
       }
-      .container {
-        margin-top: 50px;
-        background-color: #fff;
-        border-radius: 12px;
+
+      .results-container {
+        background-color: var(--container-background);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
         padding: 30px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        max-width: 1200px;
+        margin: 0 auto;
       }
-      .graph-container {
-        margin-top: 30px;
+
+      .page-header {
         text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--primary-color);
       }
-      img.graph {
-        max-width: 100%;
-        border: 1px solid #ccc;
+
+      .page-header h1 {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin: 0;
+      }
+
+      .page-header p {
+        color: #666;
+        font-size: 1.1rem;
+        margin: 10px 0 0 0;
+        font-weight: 500;
+      }
+
+      .summary-section {
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        margin-bottom: 30px;
+        border-left: 4px solid var(--primary-color);
+      }
+
+      .summary-section h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .summary-section h2::before {
+        content: "📊";
+        font-size: 1.3rem;
+      }
+
+      .summary-item {
+        background-color: white;
+        padding: 20px;
         border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+      }
+
+      .summary-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .summary-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .summary-item .label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .summary-item .value {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #212529;
+      }
+
+      .summary-item code {
+        background-color: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: "Courier New", monospace;
+        font-size: 1.1rem;
+        color: var(--primary-color);
+        border: 1px solid #dee2e6;
+      }
+
+      .optimal-value {
+        color: var(--success-color) !important;
+      }
+
+      .solution-point {
+        color: #fd7e14 !important;
+      }
+
+      .plot-section {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        box-shadow: var(--shadow);
+        margin-bottom: 30px;
+      }
+
+      .plot-section h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .plot-section h2::before {
+        content: "📈";
+        font-size: 1.3rem;
+      }
+
+      #plot-container {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: white;
+      }
+
+      .actions-section {
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      .btn-back {
+        background-color: rgb(163, 55, 226);
+        border-color: var(--primary-color);
+        color: rgb(250, 250, 250);
+        font-weight: 600;
+        padding: 12px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+      }
+
+      .btn-back:hover {
+        background-color: #4552e8;
+        border-color: #4552e8;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(86, 100, 245, 0.3);
+      }
+
+      .error-container {
+        background-color: white;
+        border-radius: var(--border-radius);
+        padding: 40px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--danger-color);
+      }
+
+      .error-container h2 {
+        color: var(--danger-color);
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        font-weight: 600;
+      }
+
+      .error-container p {
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      .error-container a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .error-container a:hover {
+        text-decoration: underline;
+      }
+
+      /* Animaciones usando las existentes */
+      .summary-item,
+      .plot-section {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .plot-section {
+        animation-delay: 0.1s;
+      }
+
+      /* Grid responsivo */
+      @media (min-width: 992px) {
+        .content-grid {
+          display: grid;
+          grid-template-columns: 1fr 2fr;
+          gap: 30px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .results-container {
+          padding: 20px;
+          margin: 10px;
+        }
+
+        .page-header h1 {
+          font-size: 2rem;
+        }
+
+        .summary-section,
+        .plot-section {
+          padding: 20px;
+        }
+
+        .btn-back {
+          padding: 10px 20px;
+          font-size: 1rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .results-wrapper {
+          padding: 10px 0;
+        }
+
+        .results-container {
+          padding: 15px;
+        }
+
+        .page-header h1 {
+          font-size: 1.8rem;
+        }
+
+        .btn-back {
+          width: 100%;
+          padding: 12px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h3 class="text-center fw-bold">Result of the solution</h3>
+    <div class="results-wrapper">
+      <div class="results-container">
+        <div class="page-header">
+          <h1>Resultados del Método Gráfico</h1>
+          <p>Solución de Programación Lineal</p>
+        </div>
 
-      <hr />
+        <div class="content-grid">
+          <div class="summary-section">
+            <h2>Resumen de la Solución</h2>
 
-      <h5>objective function:</h5>
-      <p>objective function</p>
+            <div class="summary-item">
+              <div class="label">Función Objetivo</div>
+              <div class="value">
+                <code id="objetivo"></code>
+              </div>
+            </div>
 
-      <h5>constraints:</h5>
-      <ul>
-        <li>constraint 1</li>
-        <li>constraint 2</li>
-      </ul>
+            <div class="summary-item">
+              <div class="label">Valor Óptimo</div>
+              <div class="value optimal-value" id="valor-optimo"></div>
+            </div>
 
-      <div class="graph-container">
-        <h5>Graph of the solution:</h5>
+            <div class="summary-item">
+              <div class="label">Punto Óptimo</div>
+              <div class="value solution-point" id="solucion"></div>
+            </div>
+          </div>
+
+          <div class="plot-section">
+            <h2>Visualización Gráfica</h2>
+            <div id="plot-container"></div>
+          </div>
+        </div>
+
+        <div class="actions-section">
+          <a href="/" class="btn-back">🏠 Resolver Otro Problema</a>
+        </div>
       </div>
     </div>
+
+    <script src="main.js"></script>
+    <script>
+      // FUNCIÓN AUXILIAR: Encuentra y ejecuta cualquier script dentro de un elemento
+      function executeScriptsInElement(element) {
+        const scriptElements = element.getElementsByTagName("script");
+
+        for (let i = 0; i < scriptElements.length; i++) {
+          const script = document.createElement("script");
+          script.innerHTML = scriptElements[i].innerHTML;
+          document.body.appendChild(script);
+          scriptElements[i].parentNode.removeChild(scriptElements[i]);
+        }
+      }
+
+      // Función para formatear valores
+      function formatValue(value) {
+        if (value === null || value === undefined) {
+          return "No encontrado";
+        }
+        if (typeof value === "number") {
+          return value.toFixed(4);
+        }
+        if (Array.isArray(value)) {
+          return `(${value.map((v) => v.toFixed(4)).join(", ")})`;
+        }
+        return value.toString();
+      }
+
+      // Función para formatear función objetivo
+      function formatObjective(objective) {
+        if (Array.isArray(objective)) {
+          return objective
+            .map((coef, i) => {
+              const variable = i === 0 ? "x" : "y";
+              const sign = coef >= 0 ? "+" : "";
+              return `${sign}${coef}${variable}`;
+            })
+            .join(" ")
+            .replace(/^\+/, "");
+        }
+        return objective.toString();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const resultDataString = localStorage.getItem("lp_result");
+
+        if (resultDataString) {
+          const resultData = JSON.parse(resultDataString);
+
+          // Llenar los datos del resumen
+          document.getElementById("objetivo").textContent = formatObjective(
+            resultData.objetivo
+          );
+          document.getElementById("valor-optimo").textContent = formatValue(
+            resultData.valor_optimo
+          );
+          document.getElementById("solucion").textContent = formatValue(
+            resultData.solucion
+          );
+
+          // Insertar y ejecutar el gráfico
+          const plotContainer = document.getElementById("plot-container");
+          plotContainer.innerHTML = resultData.plot_html;
+          executeScriptsInElement(plotContainer);
+        } else {
+          // Mostrar mensaje de error
+          document.querySelector(".content-grid").innerHTML = `
+            <div class="error-container">
+              <h2>⚠️ No se encontraron resultados</h2>
+              <p>Por favor, <a href="/">vuelve al inicio</a> y resuelve un problema primero.</p>
+            </div>
+          `;
+        }
+      });
+    </script>
   </body>
 </html>

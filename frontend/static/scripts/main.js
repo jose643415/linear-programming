@@ -191,7 +191,7 @@ function processFormData(formData) {
 
 function sendToBackend(formData) {
   console.log("Sending form data to backend:", formData);
-  fetch("/resolver", {
+  fetch("/results", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -202,6 +202,8 @@ function sendToBackend(formData) {
     .then((data) => {
       console.log("Success:", data);
       showMessage("Problem solved successfully!", "success");
+      localStorage.setItem("lp_result", JSON.stringify(data));
+      window.location.href = "/results";
     })
     .catch((error) => {
       console.error("Error:", error);

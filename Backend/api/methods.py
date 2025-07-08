@@ -1,13 +1,15 @@
 import numpy as np
 import plotly.graph_objs as go
 from scipy.optimize import linprog
+from plotly.io import to_html
 
-def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
+def metodo_grafico(objetivo, restricciones, limites=(0,10,0,10), maximizar=True):
     x_min, x_max, y_min, y_max = limites
     x = np.linspace(x_min, x_max, 400)
     y = np.linspace(y_min, y_max, 400)
     X, Y = np.meshgrid(x, y)
 
+    # Crear máscara para la región factible
     mascara = np.ones_like(X, dtype=bool)
     for a, b, cst, sentido in restricciones:
         if sentido == '<=':
@@ -18,39 +20,85 @@ def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
             mascara &= np.isclose(a * X + b * Y, cst, atol=1e-3)
 
     fig = go.Figure()
-    for a, b, cst, sentido in restricciones:
-        if b != 0:
-            y_vals = (cst - a * x) / b
-            mask = (y_vals >= y_min) & (y_vals <= y_max)
-            estilo = 'dash' if sentido != '=' else 'solid'
-            fig.add_trace(go.Scatter(
-                x=x[mask], y=y_vals[mask], mode='lines',
-                name=f"{a}x + {b}y {sentido} {cst}",
-                line=dict(dash=estilo)
-            ))
-        else:
-            x_val = cst / a
-            if x_min <= x_val <= x_max:
+    
+    # Dibujar las líneas de restricción CORREGIDO
+    for i, (a, b, cst, sentido) in enumerate(restricciones):
+        if b != 0:  # Línea no vertical
+            # Calcular y para los límites de x
+            y_start = (cst - a * x_min) / b
+            y_end = (cst - a * x_max) / b
+            
+            # Encontrar los puntos de intersección con los límites del gráfico
+            puntos_interseccion = []
+            
+            # Intersección con x = x_min
+            y_at_xmin = (cst - a * x_min) / b
+            if y_min <= y_at_xmin <= y_max:
+                puntos_interseccion.append((x_min, y_at_xmin))
+            
+            # Intersección con x = x_max
+            y_at_xmax = (cst - a * x_max) / b
+            if y_min <= y_at_xmax <= y_max:
+                puntos_interseccion.append((x_max, y_at_xmax))
+            
+            # Intersección con y = y_min
+            if a != 0:
+                x_at_ymin = (cst - b * y_min) / a
+                if x_min <= x_at_ymin <= x_max:
+                    puntos_interseccion.append((x_at_ymin, y_min))
+            
+            # Intersección con y = y_max
+            if a != 0:
+                x_at_ymax = (cst - b * y_max) / a
+                if x_min <= x_at_ymax <= x_max:
+                    puntos_interseccion.append((x_at_ymax, y_max))
+            
+            # Eliminar duplicados y ordenar
+            puntos_interseccion = list(set(puntos_interseccion))
+            
+            if len(puntos_interseccion) >= 2:
+                # Tomar solo los primeros 2 puntos para dibujar la línea
+                puntos_interseccion = sorted(puntos_interseccion)[:2]
+                x_vals = [p[0] for p in puntos_interseccion]
+                y_vals = [p[1] for p in puntos_interseccion]
+                
                 estilo = 'dash' if sentido != '=' else 'solid'
                 fig.add_trace(go.Scatter(
-                    x=[x_val, x_val], y=[y_min, y_max], mode='lines',
-                    name=f"x = {x_val}",
-                    line=dict(dash=estilo)
+                    x=x_vals, y=y_vals, mode='lines',
+                    name=f"{a}x + {b}y {sentido} {cst}",
+                    line=dict(dash=estilo, width=2)
                 ))
+        
+        else:  # Línea vertical (b = 0)
+            if a != 0:
+                x_val = cst / a
+                if x_min <= x_val <= x_max:
+                    estilo = 'dash' if sentido != '=' else 'solid'
+                    fig.add_trace(go.Scatter(
+                        x=[x_val, x_val], y=[y_min, y_max], mode='lines',
+                        name=f"x = {x_val}",
+                        line=dict(dash=estilo, width=2)
+                    ))
 
+    # Añadir la región factible
     fig.add_trace(go.Contour(
         x=x, y=y, z=mascara.astype(int),
-        showscale=False, opacity=0.3, colorscale=[[0, 'rgba(0,0,0,0)'], [1, 'lightgreen']],
-        hoverinfo='skip', name='Región factible'
+        showscale=False, opacity=0.5, 
+        colorscale=[[0, 'rgba(0,0,0,0)'], [1, 'lightgreen']],
+        hoverinfo='skip', name='Región factible',
+        contours=dict(coloring='fill', showlines=False)
     ))
 
+    # Resolver el problema de optimización
     c = np.array(objetivo)
     if maximizar:
         c = -c
+    
     A_ub = []
     b_ub = []
     A_eq = []
     b_eq = []
+    
     for a, b, cst, sentido in restricciones:
         if sentido == '<=':
             A_ub.append([a, b])
@@ -61,12 +109,16 @@ def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
         elif sentido == '=':
             A_eq.append([a, b])
             b_eq.append(cst)
+    
     res = linprog(c, A_ub=A_ub if A_ub else None, b_ub=b_ub if b_ub else None,
                   A_eq=A_eq if A_eq else None, b_eq=b_eq if b_eq else None,
                   bounds=[(x_min, x_max), (y_min, y_max)])
+    
     if res.success:
         x_opt, y_opt = res.x
         valor_opt = np.dot(objetivo, res.x)
+        
+        # Añadir punto óptimo
         fig.add_trace(go.Scatter(
             x=[x_opt], y=[y_opt], mode='markers+text',
             marker=dict(color='red', size=12),
@@ -74,23 +126,39 @@ def metodo_grafico(objetivo, restricciones, limites, maximizar=True):
             textposition="top right",
             name='Solución óptima'
         ))
+        
         fig.update_layout(
             title='Programación Lineal (Método Gráfico)',
             xaxis_title='x',
             yaxis_title='y',
-            legend=dict(x=0.01, y=0.99)
+            legend=dict(x=0.01, y=0.99),
+            xaxis=dict(range=[x_min, x_max]),
+            yaxis=dict(range=[y_min, y_max])
         )
-        fig.show()
-        print(f"Punto óptimo: x = {x_opt:.2f}, y = {y_opt:.2f}")
-        print(f"Valor óptimo: {valor_opt:.2f}")
-        return (x_opt, y_opt), valor_opt
+        
+        plot_html = to_html(fig, full_html=False)
+        return {
+            "plot_html": plot_html,
+            "solucion": (x_opt, y_opt),
+            "valor_optimo": valor_opt,
+            "restricciones": restricciones,
+            "objetivo": objetivo
+        }
     else:
         fig.update_layout(
             title='Programación Lineal (Método Gráfico)',
             xaxis_title='x',
             yaxis_title='y',
-            legend=dict(x=0.01, y=0.99)
+            legend=dict(x=0.01, y=0.99),
+            xaxis=dict(range=[x_min, x_max]),
+            yaxis=dict(range=[y_min, y_max])
         )
-        fig.show()
-        print("No se encontró solución factible.")
-        return None, None
+        
+        plot_html = to_html(fig, full_html=False)
+        return {
+            "plot_html": plot_html,
+            "solucion": None,
+            "valor_optimo": None,
+            "restricciones": restricciones,
+            "objetivo": objetivo
+        }
