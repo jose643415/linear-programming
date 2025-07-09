@@ -2,6 +2,9 @@ import numpy as np
 import plotly.graph_objs as go
 from scipy.optimize import linprog
 from plotly.io import to_html
+import pandas as pd
+from IPython.display import display, clear_output
+import time
 
 def metodo_grafico(objetivo, restricciones, limites=(0,10,0,10), maximizar=True):
     x_min, x_max, y_min, y_max = limites
@@ -162,3 +165,194 @@ def metodo_grafico(objetivo, restricciones, limites=(0,10,0,10), maximizar=True)
             "restricciones": restricciones,
             "objetivo": objetivo
         }
+
+def mostrar_tableau(tableau, var_names, basic_vars, iteration, pivot_row=None, pivot_col=None, pause_time=2):
+    clear_output(wait=True)
+    print(f"\n--- Iteración {iteration} ---\n")
+    df = pd.DataFrame(tableau)
+    df.columns = var_names + ['Solución']
+    df.index = [f"BV_{var_names[i]}" for i in basic_vars] + ['Z']
+
+    def highlight_table_full(data):
+        styles = pd.DataFrame('', index=data.index, columns=data.columns)
+        if pivot_row is not None and pivot_col is not None:
+            styles.iloc[pivot_row, :] = 'background-color: lightyellow'
+            styles.iloc[:, pivot_col] = 'background-color: lightblue'
+            styles.iloc[pivot_row, pivot_col] = 'background-color: green; color: white'
+        return styles
+
+    styled = df.style.apply(highlight_table_full, axis=None)
+    display(styled.set_caption("Tableau Simplex"))
+    time.sleep(pause_time)
+
+class SimplexBigM:
+    def __init__(self, objetivo, restricciones, maximizar=True, M=1e5):
+        self.objetivo = np.array(objetivo, dtype=float)
+        self.restricciones = restricciones
+        self.maximizar = maximizar
+        self.M = M
+        self.var_names = [f"x{i+1}" for i in range(len(objetivo))]
+        self.basic_vars = []
+        self.tableau = None
+
+    def setup(self):
+        n_original = len(self.objetivo)
+        A_rows = []
+        b = []
+        signos = []
+
+        slack_count = 0
+        surplus_count = 0
+        artificial_count = 0
+        row_types = []
+
+        for restr in self.restricciones:
+            signo = restr[-1]
+            if signo == '<=':
+                slack_count += 1
+                row_types.append('slack')
+            elif signo == '>=':
+                surplus_count += 1
+                artificial_count += 1
+                row_types.append('surplus_artificial')
+            elif signo == '=':
+                artificial_count += 1
+                row_types.append('artificial')
+
+        total_extra_cols = slack_count + surplus_count + artificial_count
+        total_vars = n_original + total_extra_cols
+
+        # Build variable names
+        slack_num = surplus_num = artificial_num = 0
+        extra_var_names = []
+        for typ in row_types:
+            if typ == 'slack':
+                slack_num += 1
+                extra_var_names.append(f"s{slack_num}")
+            elif typ == 'surplus_artificial':
+                surplus_num += 1
+                artificial_num += 1
+                extra_var_names.append(f"e{surplus_num}")
+                extra_var_names.append(f"a{artificial_num}")
+            elif typ == 'artificial':
+                artificial_num += 1
+                extra_var_names.append(f"a{artificial_num}")
+
+        self.var_names += extra_var_names
+
+        # Build A matrix
+        slack_num = surplus_num = artificial_num = 0
+        basic_var_pos = []
+        for idx, restr in enumerate(self.restricciones):
+            coefs = list(restr[:-2])
+            rhs = restr[-2]
+            signo = restr[-1]
+            fila = coefs + [0]*total_extra_cols
+
+            if signo == '<=':
+                fila[n_original + slack_num] = 1
+                basic_var_pos.append(n_original + slack_num)
+                slack_num += 1
+            elif signo == '>=':
+                fila[n_original + slack_num] = -1
+                fila[n_original + slack_count + surplus_num] = 1
+                basic_var_pos.append(n_original + slack_count + surplus_num)
+                slack_num += 1
+                surplus_num += 1
+            elif signo == '=':
+                fila[n_original + slack_count + surplus_count + artificial_num] = 1
+                basic_var_pos.append(n_original + slack_count + surplus_count + artificial_num)
+                artificial_num += 1
+
+            A_rows.append(fila)
+            b.append(rhs)
+
+        A = np.array(A_rows, dtype=float)
+        b = np.array(b, dtype=float)
+
+        # Build c with Big M penalties
+        c = list(self.objetivo) + [0]*total_extra_cols
+        artificial_pos = []
+        surplus_num = artificial_num = 0
+        for typ in row_types:
+            if typ == 'slack':
+                pass
+            elif typ == 'surplus_artificial':
+                artificial_pos.append(n_original + slack_count + surplus_num)
+                surplus_num += 1
+                artificial_num += 1
+            elif typ == 'artificial':
+                artificial_pos.append(n_original + slack_count + surplus_count + artificial_num)
+                artificial_num += 1
+
+        for idx in artificial_pos:
+            if self.maximizar:
+                c[idx] = -self.M
+            else:
+                c[idx] = self.M
+
+        c = np.array(c, dtype=float)
+        if self.maximizar:
+            c = -c
+
+        last_row = np.append(c, 0)
+        tableau = np.hstack((A, b.reshape(-1,1)))
+        tableau = np.vstack((tableau, last_row))
+        self.tableau = tableau
+        self.basic_vars = basic_var_pos
+
+    def solve(self, pause_time=2):
+        self.setup()
+        iteration = 0
+
+        while True:
+            iteration += 1
+            mostrar_tableau(self.tableau.copy(), self.var_names, self.basic_vars, iteration, pause_time=pause_time)
+
+            last_row = self.tableau[-1, :-1]
+            if (self.maximizar and all(last_row >= -1e-8)) or (not self.maximizar and all(last_row <= 1e-8)):
+                break
+
+            if self.maximizar:
+                entering = np.argmin(last_row)
+            else:
+                entering = np.argmax(last_row)
+
+            ratios = []
+            for i in range(len(self.tableau)-1):
+                col_val = self.tableau[i, entering]
+                if col_val > 1e-8:
+                    ratios.append(self.tableau[i, -1] / col_val)
+                else:
+                    ratios.append(np.inf)
+
+            leaving = np.argmin(ratios)
+            if ratios[leaving] == np.inf:
+                print("¡Problema no acotado!")
+                return
+
+            self.basic_vars[leaving] = entering
+
+            # Show tableau with pivot highlighting
+            mostrar_tableau(self.tableau.copy(), self.var_names, self.basic_vars, iteration, pivot_row=leaving, pivot_col=entering, pause_time=pause_time)
+
+            pivot = self.tableau[leaving, entering]
+            self.tableau[leaving, :] /= pivot
+            for i in range(self.tableau.shape[0]):
+                if i != leaving:
+                    self.tableau[i, :] -= self.tableau[i, entering] * self.tableau[leaving, :]
+
+        mostrar_tableau(self.tableau.copy(), self.var_names, self.basic_vars, iteration+1, pause_time=pause_time)
+        z = self.tableau[-1, -1]
+        if self.maximizar:
+            z = -z
+
+        sol = np.zeros(len(self.var_names))
+        for i, var in enumerate(self.basic_vars):
+            sol[var] = self.tableau[i, -1]
+
+        print("\n====== RESULTADO FINAL ======")
+        print(f"Valor óptimo Z = {z}")
+        print("Solución óptima:")
+        for i, name in enumerate(self.var_names[:len(self.objetivo)]):
+            print(f"{name} = {sol[i]}")
