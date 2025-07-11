@@ -1,4 +1,8 @@
 import re
+import pandas as pd
+import time
+from IPython.display import clear_output, display
+import plotly.graph_objects as go
 
 def parse_objective_function(objective_function):
     objective_function = objective_function.replace(" ", "")

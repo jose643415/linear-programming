@@ -203,7 +203,15 @@ function sendToBackend(formData) {
       console.log("Success:", data);
       showMessage("Problem solved successfully!", "success");
       localStorage.setItem("lp_result", JSON.stringify(data));
-      window.location.href = "/results";
+
+      const redirectUrl =
+        formData.method === "Graphical Method"
+          ? "/results"
+          : formData.method === "Simplex M Method"
+          ? "/simplex_results"
+          : "/";
+
+      window.location.href = redirectUrl;
     })
     .catch((error) => {
       console.error("Error:", error);
